@@ -12,40 +12,25 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: UseNode@1
+- task: NodeTool@0
   inputs:
     versionSpec: '14.x'
-    displayName: 'Install Node.js'
+  displayName: 'Install Node.js'
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'Install dependencies and build'
+- script: npm install
+  displayName: 'Install dependencies'
 
-- task: AzureKeyVault@2
+
+- task: AzureKeyVault@1
   inputs:
     azureSubscription: 'azurekeyvaultproject2'
     KeyVaultName: 'keyvaultrm'
-    SecretsFilter: '*'  # You can filter specific secrets if needed
+    SecretsFilter: '*'
 
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: 'azurekeyvaultproject2'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      export SECRET_VALUE=$(az keyvault secret show --name database-connection-string --vault-name keyvaultrm --query value -o tsv)
-      echo "##vso[task.setvariable variable=SECRET_VALUE]$SECRET_VALUE"
-
-
-
-- task: AzureWebApp@1
-  inputs:
-    azureSubscription: 'azurekeyvaultproject2'
-    appName: 'app.js'
-    package: '$(System.DefaultWorkingDirectory)/<Artifact Name>'
-    customApplicationName: 'app.js'
-    deploymentMethod: 'zipDeploy'
-    enableCustomDeployment: true
-    appSettings: |
-      -CONNECTION_STRING $(SECRET_VALUE)
+- script: |
+    # Retrieve secrets from Azure Key Vault
+    MY_SECRET=$(az keyvault secret show --vault-name keyvaultrm --name database-connection-string --query value -o tsv)
+    export MY_SECRET
+    # Run the application with the retrieved secret
+    node app.js
+  displayName: 'Run Application'
