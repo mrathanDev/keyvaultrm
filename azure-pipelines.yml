@@ -3,6 +3,8 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+# azure-pipelines.yml
+
 trigger:
 - master
 
@@ -13,7 +15,7 @@ steps:
 - task: UseNode@1
   inputs:
     versionSpec: '14.x'
-  displayName: 'Install Node.js'
+    displayName: 'Install Node.js'
 
 - script: |
     npm install
@@ -22,13 +24,13 @@ steps:
 
 - task: AzureKeyVault@2
   inputs:
-    azureSubscription: 'azurekeyvaultproject2'
+    azureSubscription: 'KeyVaultLogging'
     KeyVaultName: 'keyvaultrm'
     SecretsFilter: '*'  # You can filter specific secrets if needed
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'azurekeyvaultproject2'
+    azureSubscription: 'KeyVaultLogging'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
@@ -47,7 +49,7 @@ steps:
 
 - task: AzureWebApp@1
   inputs:
-    azureSubscription: 'azurekeyvaultproject2'
+    azureSubscription: 'KeyVaultLogging'
     appName: 'app.js'
     package: '$(System.DefaultWorkingDirectory)/<Artifact Name>'
     customApplicationName: 'app.js'
