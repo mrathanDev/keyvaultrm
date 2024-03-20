@@ -4,13 +4,13 @@
 # https://aka.ms/yaml
 
 trigger:
-- main
+- master
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: NodeTool@0
+- task: UseNode@1
   inputs:
     versionSpec: '14.x'
   displayName: 'Install Node.js'
@@ -24,16 +24,34 @@ steps:
   inputs:
     azureSubscription: 'azurekeyvaultproject2'
     KeyVaultName: 'keyvaultrm'
-    SecretsFilter: '*'  # Specify the secrets you want to fetch
-    RunAsPreJob: false
+    SecretsFilter: '*'  # You can filter specific secrets if needed
 
-- task: CopyFiles@2
+- task: AzureCLI@2
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
-    Contents: '**/*.js'  # Adjust the path to your application files
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    azureSubscription: 'azurekeyvaultproject2'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      export SECRET_VALUE=$(az keyvault secret show --name <Secret Name> --vault-name <Key Vault Name> --query value -o tsv)
+      echo "##vso[task.setvariable variable=SECRET_VALUE]$SECRET_VALUE"
 
-- task: PublishBuildArtifacts@1
+- task: NodeTool@0
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
+    versionSpec: '14.x'
+    displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    npm run build
+  displayName: 'Install dependencies and build'
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'azurekeyvaultproject2'
+    appName: 'app.js'
+    package: '$(System.DefaultWorkingDirectory)/<Artifact Name>'
+    customApplicationName: 'app.js'
+    deploymentMethod: 'zipDeploy'
+    enableCustomDeployment: true
+    appSettings: |
+      -CONNECTION_STRING $(SECRET_VALUE)
