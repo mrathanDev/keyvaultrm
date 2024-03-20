@@ -22,7 +22,7 @@ steps:
 
 - task: AzureKeyVault@2
   inputs:
-    azureSubscription: 'BharathPotluri1'
+    azureSubscription: 'azurekeyvaultproject2'
     KeyVaultName: 'keyvaultrm'
     SecretsFilter: '*'  # Specify the secrets you want to fetch
     RunAsPreJob: false
