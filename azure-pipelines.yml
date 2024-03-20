@@ -24,13 +24,13 @@ steps:
 
 - task: AzureKeyVault@2
   inputs:
-    azureSubscription: 'KeyVaultLogging'
+    azureSubscription: 'azurekeyvaultproject2'
     KeyVaultName: 'keyvaultrm'
     SecretsFilter: '*'  # You can filter specific secrets if needed
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'KeyVaultLogging'
+    azureSubscription: 'azurekeyvaultproject2'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
@@ -49,7 +49,7 @@ steps:
 
 - task: AzureWebApp@1
   inputs:
-    azureSubscription: 'KeyVaultLogging'
+    azureSubscription: 'azurekeyvaultproject2'
     appName: 'app.js'
     package: '$(System.DefaultWorkingDirectory)/<Artifact Name>'
     customApplicationName: 'app.js'
